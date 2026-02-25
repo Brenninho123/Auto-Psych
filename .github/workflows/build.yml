@@ -1,19 +1,27 @@
-name: Psych Auto Build
+name: Psych Ultra Build
 
 on:
   push:
-    branches: [ main ]
+    tags:
+      - 'v*'
 
 jobs:
-  build-windows:
+  build:
     runs-on: windows-latest
+
     steps:
       - uses: actions/checkout@v3
 
-      - name: Install Haxe
+      - name: Setup Haxe
         uses: krdlab/setup-haxe@v1
         with:
           haxe-version: 4.3.2
+
+      - name: Cache Haxelib
+        uses: actions/cache@v3
+        with:
+          path: C:\Users\runneradmin\haxelib
+          key: haxelib-${{ runner.os }}
 
       - name: Install Dependencies
         run: |
@@ -21,10 +29,10 @@ jobs:
           haxelib install lime -y
           haxelib install openfl -y
 
-      - name: Build
+      - name: Build Windows
         run: lime build windows -release
 
-      - name: Upload Build
+      - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
           name: windows-build
