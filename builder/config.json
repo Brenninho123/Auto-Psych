@@ -1,0 +1,6 @@
+{
+  "repo": "https://github.com/ShadowMario/FNF-PsychEngine.git",
+  "branch": "main",
+  "targets": ["windows", "linux", "macos", "html5", "android"],
+  "release": true
+}
