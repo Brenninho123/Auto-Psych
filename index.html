@@ -1,34 +1,93 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Auto-Psych Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto-Psych | DevOps Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
 
-<div class="container">
+<div class="app-container">
 
+    <!-- Sidebar -->
     <aside class="sidebar">
-        <h1>Auto-Psych</h1>
-        <button onclick="setSection('dashboard')">🏠 Dashboard</button>
-        <button onclick="setSection('builder')">⚙ Builder</button>
-        <button onclick="setSection('launcher')">🎮 Launcher</button>
-        <button onclick="setSection('docker')">🐳 Docker</button>
-        <button onclick="setSection('ci')">🚀 CI/CD</button>
+        <div class="sidebar-header">
+            <i class="fas fa-brain"></i>
+            <h1>Auto-Psych</h1>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <button onclick="setSection('dashboard')" class="nav-btn active" id="nav-dashboard">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </button>
+            <button onclick="setSection('builder')" class="nav-btn" id="nav-builder">
+                <i class="fas fa-cogs"></i>
+                <span>Builder</span>
+            </button>
+            <button onclick="setSection('launcher')" class="nav-btn" id="nav-launcher">
+                <i class="fas fa-play-circle"></i>
+                <span>Launcher</span>
+            </button>
+            <button onclick="setSection('docker')" class="nav-btn" id="nav-docker">
+                <i class="fab fa-docker"></i>
+                <span>Docker</span>
+            </button>
+            <button onclick="setSection('ci')" class="nav-btn" id="nav-ci">
+                <i class="fas fa-rocket"></i>
+                <span>CI/CD</span>
+            </button>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="system-status">
+                <i class="fas fa-circle status-indicator online"></i>
+                <span>System Online</span>
+            </div>
+            <div class="version">v2.1.0</div>
+        </div>
     </aside>
 
-    <main class="main">
+    <!-- Main Content -->
+    <main class="main-content">
 
-        <header>
+        <!-- Header -->
+        <header class="main-header">
             <h2 id="page-title">Dashboard</h2>
+            <div class="header-actions">
+                <button class="icon-btn" onclick="refreshData()">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <button class="icon-btn" onclick="toggleNotifications()">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge">3</span>
+                </button>
+                <div class="user-profile">
+                    <i class="fas fa-user-circle"></i>
+                    <span>Admin</span>
+                </div>
+            </div>
         </header>
 
-        <section id="content"></section>
+        <!-- Dynamic Content Section -->
+        <section id="content" class="content-area"></section>
 
-        <section class="logs">
-            <h3>Build Logs</h3>
-            <div id="log-output"></div>
+        <!-- Logs Section -->
+        <section class="logs-section">
+            <div class="logs-header">
+                <h3><i class="fas fa-terminal"></i> Build Logs</h3>
+                <div class="logs-actions">
+                    <button class="small-btn" onclick="clearLogs()">
+                        <i class="fas fa-trash-alt"></i> Clear
+                    </button>
+                    <button class="small-btn" onclick="exportLogs()">
+                        <i class="fas fa-download"></i> Export
+                    </button>
+                </div>
+            </div>
+            <div id="log-output" class="log-output"></div>
         </section>
 
     </main>
@@ -37,6 +96,5 @@
 
 <script src="assets/main.js"></script>
 <script src="assets/ui.js"></script>
-
 </body>
 </html>
