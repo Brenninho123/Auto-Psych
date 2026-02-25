@@ -1,38 +1,35 @@
 #!/usr/bin/env bash
 set -e
 
-CONFIG="builder/config.json"
-ENGINE_DIR="PsychEngine"
-OUTPUT="build_output"
-
 TARGET=$1
-
-echo "==== PSYCH AUTO BUILDER ===="
+CACHE_DIR="$HOME/.psych_cache"
+ENGINE_DIR="PsychEngine"
 
 if [ -z "$TARGET" ]; then
-  echo "Use: ./build.sh <windows|linux|macos|html5|android>"
+  echo "Use: ./build.sh windows|linux|macos|html5|android"
   exit 1
 fi
 
-echo "-- Limpando diretórios"
-rm -rf $ENGINE_DIR $OUTPUT
-mkdir -p $OUTPUT
+echo "=== PSYCH ULTRA BUILDER ==="
 
-echo "-- Clonando engine"
-git clone https://github.com/ShadowMario/FNF-PsychEngine.git $ENGINE_DIR
+mkdir -p $CACHE_DIR
+
+if [ ! -d "$ENGINE_DIR" ]; then
+  echo "-- Clonando engine..."
+  git clone https://github.com/ShadowMario/FNF-PsychEngine.git
+fi
+
 cd $ENGINE_DIR
 
-echo "-- Instalando libs"
+echo "-- Restaurando cache haxelib"
+haxelib setup $CACHE_DIR
+
+echo "-- Instalando dependências"
 haxelib install flixel -y
 haxelib install lime -y
 haxelib install openfl -y
 
-haxelib run lime setup
+echo "-- Buildando $TARGET"
+lime build $TARGET -release -final
 
-echo "-- Compilando $TARGET"
-lime build $TARGET -release
-
-echo "-- Copiando build"
-cp -r export/* ../$OUTPUT/
-
-echo "==== BUILD FINALIZADO ===="
+echo "=== BUILD COMPLETO ==="
