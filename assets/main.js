@@ -1,62 +1,29 @@
-function setSection(section) {
+// Main application initialization and core functionality
+console.log('Auto-Psych Dashboard v2.1.0 initialized');
 
-    const content = document.getElementById("content");
-    const title = document.getElementById("page-title");
-
-    switch(section) {
-
-        case "dashboard":
-            title.innerText = "Dashboard";
-            content.innerHTML = `
-                <div class="card">
-                    <h3>Status</h3>
-                    <p>Engine pronta para build.</p>
-                </div>
-                <div class="card">
-                    <h3>Versão</h3>
-                    <p>v1.0.0</p>
-                </div>
-            `;
-            break;
-
-        case "builder":
-            title.innerText = "Builder";
-            content.innerHTML = `
-                <div class="card">
-                    <button onclick="startBuild('windows')">Build Windows</button>
-                    <button onclick="startBuild('linux')">Build Linux</button>
-                    <button onclick="startBuild('android')">Build Android</button>
-                </div>
-            `;
-            break;
-
-        case "launcher":
-            title.innerText = "Launcher";
-            content.innerHTML = `
-                <div class="card">
-                    <p>Launcher configurado.</p>
-                </div>
-            `;
-            break;
-
-        case "docker":
-            title.innerText = "Docker";
-            content.innerHTML = `
-                <div class="card">
-                    <p>Ambiente Docker configurado.</p>
-                </div>
-            `;
-            break;
-
-        case "ci":
-            title.innerText = "CI/CD";
-            content.innerHTML = `
-                <div class="card">
-                    <p>GitHub Actions ativo.</p>
-                </div>
-            `;
-            break;
+// Add any additional core functionality here
+window.addEventListener('error', function(e) {
+    console.error('Runtime error:', e.error);
+    if (typeof addLogEntry === 'function') {
+        addLogEntry(`Error: ${e.error.message}`, 'error');
     }
-}
+});
 
-setSection("dashboard");
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    // Ctrl/Cmd + B for Builder
+    if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
+        e.preventDefault();
+        setSection('builder');
+    }
+    // Ctrl/Cmd + D for Dashboard
+    if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+        e.preventDefault();
+        setSection('dashboard');
+    }
+    // Ctrl/Cmd + L for Launcher
+    if ((e.ctrlKey || e.metaKey) && e.key === 'l') {
+        e.preventDefault();
+        setSection('launcher');
+    }
+});
