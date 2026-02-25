@@ -1,6 +1,7 @@
 {
-  "repo": "https://github.com/ShadowMario/FNF-PsychEngine.git",
+  "repo": "https://github.com/SEU-USUARIO/SEU-FORK.git",
   "branch": "main",
-  "targets": ["windows", "linux", "macos", "html5", "android"],
-  "release": true
+  "haxe_version": "4.3.2",
+  "release": true,
+  "itch_project": "usuario/projeto"
 }
