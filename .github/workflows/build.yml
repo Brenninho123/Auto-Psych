@@ -1,0 +1,31 @@
+name: Psych Auto Build
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Haxe
+        uses: krdlab/setup-haxe@v1
+        with:
+          haxe-version: 4.3.2
+
+      - name: Install Dependencies
+        run: |
+          haxelib install flixel -y
+          haxelib install lime -y
+          haxelib install openfl -y
+
+      - name: Build
+        run: lime build windows -release
+
+      - name: Upload Build
+        uses: actions/upload-artifact@v3
+        with:
+          name: windows-build
+          path: export/
