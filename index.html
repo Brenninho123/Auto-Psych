@@ -3,98 +3,247 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Auto-Psych | DevOps Dashboard</title>
+    <title>Auto-Psych · Intelligent DevOps Orchestrator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
 
-<div class="app-container">
-
-    <!-- Sidebar -->
-    <aside class="sidebar">
+<div class="app" id="app">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <i class="fas fa-brain"></i>
-            <h1>Auto-Psych</h1>
+            <div class="logo">
+                <i class="fas fa-mind-share"></i>
+                <span class="logo-text">Auto<span class="highlight">Psych</span></span>
+            </div>
+            <button class="collapse-btn" id="collapseSidebar">
+                <i class="fas fa-chevron-left"></i>
+            </button>
         </div>
-        
+
         <nav class="sidebar-nav">
-            <button onclick="setSection('dashboard')" class="nav-btn active" id="nav-dashboard">
-                <i class="fas fa-chart-line"></i>
-                <span>Dashboard</span>
-            </button>
-            <button onclick="setSection('builder')" class="nav-btn" id="nav-builder">
-                <i class="fas fa-cogs"></i>
-                <span>Builder</span>
-            </button>
-            <button onclick="setSection('launcher')" class="nav-btn" id="nav-launcher">
-                <i class="fas fa-play-circle"></i>
-                <span>Launcher</span>
-            </button>
-            <button onclick="setSection('docker')" class="nav-btn" id="nav-docker">
-                <i class="fab fa-docker"></i>
-                <span>Docker</span>
-            </button>
-            <button onclick="setSection('ci')" class="nav-btn" id="nav-ci">
-                <i class="fas fa-rocket"></i>
-                <span>CI/CD</span>
-            </button>
+            <div class="nav-section">
+                <div class="nav-section-title">MAIN</div>
+                <button onclick="setSection('dashboard')" class="nav-item active" id="nav-dashboard">
+                    <i class="fas fa-chart-pie"></i>
+                    <span class="nav-label">Dashboard</span>
+                    <span class="nav-badge">9+</span>
+                </button>
+                <button onclick="setSection('builder')" class="nav-item" id="nav-builder">
+                    <i class="fas fa-cubes"></i>
+                    <span class="nav-label">Builder</span>
+                </button>
+                <button onclick="setSection('launcher')" class="nav-item" id="nav-launcher">
+                    <i class="fas fa-rocket"></i>
+                    <span class="nav-label">Launcher</span>
+                </button>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">INFRASTRUCTURE</div>
+                <button onclick="setSection('docker')" class="nav-item" id="nav-docker">
+                    <i class="fab fa-docker"></i>
+                    <span class="nav-label">Docker</span>
+                    <span class="nav-badge success">4</span>
+                </button>
+                <button onclick="setSection('kubernetes')" class="nav-item" id="nav-kubernetes">
+                    <i class="fas fa-cloud"></i>
+                    <span class="nav-label">Kubernetes</span>
+                </button>
+                <button onclick="setSection('ci')" class="nav-item" id="nav-ci">
+                    <i class="fas fa-code-branch"></i>
+                    <span class="nav-label">CI/CD</span>
+                </button>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">OBSERVABILITY</div>
+                <button onclick="setSection('metrics')" class="nav-item" id="nav-metrics">
+                    <i class="fas fa-chart-line"></i>
+                    <span class="nav-label">Metrics</span>
+                </button>
+                <button onclick="setSection('logs')" class="nav-item" id="nav-logs">
+                    <i class="fas fa-scroll"></i>
+                    <span class="nav-label">Logs</span>
+                </button>
+                <button onclick="setSection('alerts')" class="nav-item" id="nav-alerts">
+                    <i class="fas fa-bell"></i>
+                    <span class="nav-label">Alerts</span>
+                    <span class="nav-badge warning">3</span>
+                </button>
+            </div>
         </nav>
 
         <div class="sidebar-footer">
             <div class="system-status">
-                <i class="fas fa-circle status-indicator online"></i>
-                <span>System Online</span>
+                <div class="status-indicator">
+                    <span class="status-dot online"></span>
+                    <span class="status-text">All systems operational</span>
+                </div>
+                <div class="system-metrics">
+                    <div class="metric">
+                        <span class="metric-label">CPU</span>
+                        <span class="metric-value">23%</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">MEM</span>
+                        <span class="metric-value">4.2GB</span>
+                    </div>
+                </div>
             </div>
-            <div class="version">v2.1.0</div>
+            
+            <div class="user-profile">
+                <img src="https://ui-avatars.com/api/?name=Admin+User&background=6366f1&color=fff&size=128" alt="Profile" class="avatar">
+                <div class="user-info">
+                    <div class="user-name">Alex Morgan</div>
+                    <div class="user-role">DevOps Engineer</div>
+                </div>
+                <button class="user-menu-btn" onclick="toggleUserMenu()">
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
+            </div>
         </div>
     </aside>
 
-    <!-- Main Content -->
-    <main class="main-content">
-
-        <!-- Header -->
+    <!-- Main Content Area -->
+    <main class="main">
+        <!-- Top Header -->
         <header class="main-header">
-            <h2 id="page-title">Dashboard</h2>
-            <div class="header-actions">
-                <button class="icon-btn" onclick="refreshData()">
-                    <i class="fas fa-sync-alt"></i>
+            <div class="header-left">
+                <button class="menu-toggle" id="menuToggle">
+                    <i class="fas fa-bars"></i>
                 </button>
-                <button class="icon-btn" onclick="toggleNotifications()">
-                    <i class="fas fa-bell"></i>
-                    <span class="notification-badge">3</span>
-                </button>
-                <div class="user-profile">
-                    <i class="fas fa-user-circle"></i>
-                    <span>Admin</span>
+                <div class="page-title-wrapper">
+                    <h1 id="page-title">Dashboard</h1>
+                    <div class="page-context" id="pageContext">overview · last 24h</div>
+                </div>
+            </div>
+
+            <div class="header-right">
+                <div class="header-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search anything..." id="globalSearch">
+                    <span class="search-shortcut">⌘K</span>
+                </div>
+
+                <div class="header-actions">
+                    <button class="action-btn" onclick="toggleTheme()">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <button class="action-btn" onclick="toggleNotifications()">
+                        <i class="fas fa-bell"></i>
+                        <span class="action-badge">3</span>
+                    </button>
+                    <button class="action-btn" onclick="toggleQuickActions()">
+                        <i class="fas fa-bolt"></i>
+                    </button>
+                </div>
+
+                <div class="header-integrations">
+                    <i class="fab fa-github"></i>
+                    <i class="fab fa-aws"></i>
+                    <i class="fab fa-docker"></i>
                 </div>
             </div>
         </header>
 
-        <!-- Dynamic Content Section -->
-        <section id="content" class="content-area"></section>
+        <!-- Dynamic Content -->
+        <div class="content-wrapper">
+            <div id="content" class="content-area"></div>
+        </div>
 
-        <!-- Logs Section -->
-        <section class="logs-section">
-            <div class="logs-header">
-                <h3><i class="fas fa-terminal"></i> Build Logs</h3>
-                <div class="logs-actions">
-                    <button class="small-btn" onclick="clearLogs()">
-                        <i class="fas fa-trash-alt"></i> Clear
+        <!-- Logs Terminal -->
+        <div class="terminal-panel" id="terminalPanel">
+            <div class="terminal-header">
+                <div class="terminal-tabs">
+                    <div class="terminal-tab active">
+                        <i class="fas fa-terminal"></i>
+                        <span>Build Logs</span>
+                    </div>
+                    <div class="terminal-tab">
+                        <i class="fas fa-chart-simple"></i>
+                        <span>Performance</span>
+                    </div>
+                    <div class="terminal-tab">
+                        <i class="fas fa-bug"></i>
+                        <span>Debug</span>
+                    </div>
+                </div>
+                <div class="terminal-actions">
+                    <button class="terminal-action" onclick="clearLogs()">
+                        <i class="fas fa-trash-alt"></i>
                     </button>
-                    <button class="small-btn" onclick="exportLogs()">
-                        <i class="fas fa-download"></i> Export
+                    <button class="terminal-action" onclick="exportLogs()">
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <button class="terminal-action" onclick="toggleTerminal()">
+                        <i class="fas fa-chevron-down"></i>
                     </button>
                 </div>
             </div>
-            <div id="log-output" class="log-output"></div>
-        </section>
-
+            <div class="terminal-body" id="log-output">
+                <div class="log-line info">
+                    <span class="log-timestamp">14:32:45</span>
+                    <span class="log-level">INFO</span>
+                    <span class="log-message">System initialized · Auto-Psych v3.0.0</span>
+                </div>
+                <div class="log-line success">
+                    <span class="log-timestamp">14:32:46</span>
+                    <span class="log-level">SUCCESS</span>
+                    <span class="log-message">Connected to Docker daemon (v24.0.7)</span>
+                </div>
+                <div class="log-line info">
+                    <span class="log-timestamp">14:32:47</span>
+                    <span class="log-level">INFO</span>
+                    <span class="log-message">Loading configuration from /etc/autopsych/config.yml</span>
+                </div>
+                <div class="log-line warning">
+                    <span class="log-timestamp">14:32:48</span>
+                    <span class="log-level">WARN</span>
+                    <span class="log-message">3 containers have high memory usage</span>
+                </div>
+            </div>
+        </div>
     </main>
+</div>
 
+<!-- Quick Actions Modal -->
+<div class="modal" id="quickActionsModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Quick Actions</h3>
+            <button onclick="closeModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="quick-actions-grid">
+                <button class="quick-action-item">
+                    <i class="fas fa-sync-alt"></i>
+                    <span>Restart All Services</span>
+                </button>
+                <button class="quick-action-item">
+                    <i class="fas fa-trash"></i>
+                    <span>Clean Docker System</span>
+                </button>
+                <button class="quick-action-item">
+                    <i class="fas fa-chart-simple"></i>
+                    <span>Generate Report</span>
+                </button>
+                <button class="quick-action-item">
+                    <i class="fas fa-shield"></i>
+                    <span>Run Security Scan</span>
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="assets/main.js"></script>
 <script src="assets/ui.js"></script>
+<script src="assets/dashboard.js"></script>
+<script src="assets/charts.js"></script>
 </body>
 </html>
