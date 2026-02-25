@@ -2,30 +2,41 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Auto-Psych Builder</title>
+    <title>Auto-Psych Dashboard</title>
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
 
-    <header>
+<div class="container">
+
+    <aside class="sidebar">
         <h1>Auto-Psych</h1>
-        <p>Psych Engine Automatic Compiler</p>
-    </header>
+        <button onclick="setSection('dashboard')">🏠 Dashboard</button>
+        <button onclick="setSection('builder')">⚙ Builder</button>
+        <button onclick="setSection('launcher')">🎮 Launcher</button>
+        <button onclick="setSection('docker')">🐳 Docker</button>
+        <button onclick="setSection('ci')">🚀 CI/CD</button>
+    </aside>
 
-    <nav>
-        <button onclick="loadSection('builder')">Builder</button>
-        <button onclick="loadSection('launcher')">Launcher</button>
-        <button onclick="loadSection('installer')">Installer</button>
-        <button onclick="loadSection('docker')">Docker</button>
-        <button onclick="loadSection('ci')">CI/CD</button>
-    </nav>
+    <main class="main">
 
-    <main id="content">
-        <h2>Bem-vindo ao Auto-Psych</h2>
-        <p>Selecione uma seção acima.</p>
+        <header>
+            <h2 id="page-title">Dashboard</h2>
+        </header>
+
+        <section id="content"></section>
+
+        <section class="logs">
+            <h3>Build Logs</h3>
+            <div id="log-output"></div>
+        </section>
+
     </main>
 
-    <script src="assets/main.js"></script>
+</div>
+
+<script src="assets/main.js"></script>
+<script src="assets/ui.js"></script>
 
 </body>
 </html>
