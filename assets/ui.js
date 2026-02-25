@@ -1,40 +1,137 @@
-// UI Management and Dynamic Content
+// Core UI Management
 let currentSection = 'dashboard';
+let terminalVisible = true;
+let sidebarCollapsed = false;
 
-// Navigation
+// Initialize application
+document.addEventListener('DOMContentLoaded', () => {
+    initializeEventListeners();
+    setSection('dashboard');
+    addLogEntry('Auto-Psych v3.0.0 initialized', 'success');
+    addLogEntry('Connected to control plane', 'info');
+    startMetricsCollection();
+});
+
+function initializeEventListeners() {
+    // Sidebar collapse
+    document.getElementById('collapseSidebar').addEventListener('click', toggleSidebar);
+    document.getElementById('menuToggle').addEventListener('click', toggleMobileSidebar);
+    
+    // Global search
+    document.getElementById('globalSearch').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            performSearch(e.target.value);
+        }
+    });
+    
+    // Keyboard shortcuts
+    document.addEventListener('keydown', handleKeyboardShortcuts);
+}
+
+function handleKeyboardShortcuts(e) {
+    // Cmd/Ctrl + K for search
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        document.getElementById('globalSearch').focus();
+    }
+    
+    // Cmd/Ctrl + B for builder
+    if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
+        e.preventDefault();
+        setSection('builder');
+    }
+    
+    // Cmd/Ctrl + D for dashboard
+    if ((e.metaKey || e.ctrlKey) && e.key === 'd') {
+        e.preventDefault();
+        setSection('dashboard');
+    }
+    
+    // Cmd/Ctrl + ` for terminal
+    if ((e.metaKey || e.ctrlKey) && e.key === '`') {
+        e.preventDefault();
+        toggleTerminal();
+    }
+}
+
+function toggleSidebar() {
+    sidebarCollapsed = !sidebarCollapsed;
+    document.getElementById('sidebar').classList.toggle('collapsed');
+    document.querySelector('.collapse-btn i').classList.toggle('fa-chevron-left');
+    document.querySelector('.collapse-btn i').classList.toggle('fa-chevron-right');
+}
+
+function toggleMobileSidebar() {
+    document.getElementById('sidebar').classList.toggle('show');
+}
+
+function toggleTerminal() {
+    terminalVisible = !terminalVisible;
+    const terminal = document.getElementById('terminalPanel');
+    const chevron = terminal.querySelector('.fa-chevron-down');
+    
+    if (terminalVisible) {
+        terminal.style.height = '280px';
+        chevron.classList.remove('fa-chevron-up');
+        chevron.classList.add('fa-chevron-down');
+    } else {
+        terminal.style.height = '40px';
+        chevron.classList.remove('fa-chevron-down');
+        chevron.classList.add('fa-chevron-up');
+    }
+}
+
 function setSection(section) {
     currentSection = section;
     
-    // Update active button
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.classList.remove('active');
+    // Update navigation
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
     });
-    document.getElementById(`nav-${section}`).classList.add('active');
+    document.getElementById(`nav-${section}`)?.classList.add('active');
     
     // Update page title
     const titles = {
         dashboard: 'Dashboard',
-        builder: 'Build Configuration',
-        launcher: 'Application Launcher',
-        docker: 'Docker Management',
-        ci: 'CI/CD Pipeline'
+        builder: 'Build Pipeline',
+        launcher: 'Service Launcher',
+        docker: 'Container Management',
+        kubernetes: 'Kubernetes Cluster',
+        ci: 'CI/CD Pipelines',
+        metrics: 'System Metrics',
+        logs: 'Log Analytics',
+        alerts: 'Alert Center'
     };
-    document.getElementById('page-title').textContent = titles[section];
+    
+    document.getElementById('page-title').textContent = titles[section] || 'Dashboard';
+    
+    // Update context
+    const contexts = {
+        dashboard: 'overview · last 24h',
+        builder: 'active builds · 3 running',
+        launcher: 'service orchestration',
+        docker: 'container health · 4 running',
+        kubernetes: 'cluster: production · 8 nodes',
+        ci: 'pipeline status · 2 in progress',
+        metrics: 'real-time monitoring',
+        logs: 'recent events · 1,234 logs',
+        alerts: 'active alerts · 3 critical'
+    };
+    
+    document.getElementById('pageContext').textContent = contexts[section] || '';
     
     // Load section content
     loadSectionContent(section);
-    
-    // Add log entry
     addLogEntry(`Navigated to ${titles[section]}`, 'info');
 }
 
-// Load content for each section
 function loadSectionContent(section) {
     const contentArea = document.getElementById('content');
     
     switch(section) {
         case 'dashboard':
             contentArea.innerHTML = getDashboardHTML();
+            initializeDashboardCharts();
             break;
         case 'builder':
             contentArea.innerHTML = getBuilderHTML();
@@ -44,9 +141,23 @@ function loadSectionContent(section) {
             break;
         case 'docker':
             contentArea.innerHTML = getDockerHTML();
+            startContainerMonitoring();
+            break;
+        case 'kubernetes':
+            contentArea.innerHTML = getKubernetesHTML();
             break;
         case 'ci':
             contentArea.innerHTML = getCIHTML();
+            break;
+        case 'metrics':
+            contentArea.innerHTML = getMetricsHTML();
+            initializeMetricsCharts();
+            break;
+        case 'logs':
+            contentArea.innerHTML = getLogsHTML();
+            break;
+        case 'alerts':
+            contentArea.innerHTML = getAlertsHTML();
             break;
     }
 }
@@ -58,287 +169,150 @@ function getDashboardHTML() {
             <div class="stat-card">
                 <div class="stat-card-header">
                     <h3>Total Builds</h3>
-                    <i class="fas fa-code-branch"></i>
+                    <div class="stat-icon">
+                        <i class="fas fa-code-branch"></i>
+                    </div>
                 </div>
-                <div class="stat-value">156</div>
-                <div class="stat-change positive">↑ 12% from last week</div>
+                <div class="stat-value">2,847</div>
+                <div class="stat-trend">
+                    <span class="trend-up"><i class="fas fa-arrow-up"></i> 12.3%</span>
+                    <span>vs last week</span>
+                </div>
             </div>
             
             <div class="stat-card">
                 <div class="stat-card-header">
                     <h3>Active Containers</h3>
-                    <i class="fas fa-cubes"></i>
+                    <div class="stat-icon">
+                        <i class="fas fa-cubes"></i>
+                    </div>
                 </div>
-                <div class="stat-value">8</div>
-                <div class="stat-change">4 running, 4 stopped</div>
+                <div class="stat-value">18</div>
+                <div class="stat-trend">
+                    <span class="trend-up"><i class="fas fa-arrow-up"></i> 4</span>
+                    <span>new since yesterday</span>
+                </div>
             </div>
             
             <div class="stat-card">
                 <div class="stat-card-header">
                     <h3>Success Rate</h3>
-                    <i class="fas fa-check-circle"></i>
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
                 </div>
-                <div class="stat-value">98.5%</div>
-                <div class="stat-change positive">↑ 2.3%</div>
+                <div class="stat-value">99.2%</div>
+                <div class="stat-trend">
+                    <span class="trend-up"><i class="fas fa-arrow-up"></i> 0.8%</span>
+                    <span>above target</span>
+                </div>
             </div>
             
             <div class="stat-card">
                 <div class="stat-card-header">
-                    <h3>Avg Build Time</h3>
-                    <i class="fas fa-clock"></i>
+                    <h3>Avg Response Time</h3>
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
                 </div>
-                <div class="stat-value">2.4m</div>
-                <div class="stat-change negative">↓ 0.3m</div>
-            </div>
-        </div>
-        
-        <div style="background: white; border-radius: 16px; padding: 24px; border: 1px solid var(--border-color);">
-            <h3 style="margin-bottom: 16px;">Recent Activity</h3>
-            <div style="display: flex; flex-direction: column; gap: 12px;">
-                <div style="display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid var(--border-color);">
-                    <span><i class="fas fa-check-circle" style="color: var(--secondary-color);"></i> Build #156 completed</span>
-                    <span style="color: var(--text-secondary);">2 minutes ago</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid var(--border-color);">
-                    <span><i class="fas fa-play-circle" style="color: var(--primary-color);"></i> Container web-app started</span>
-                    <span style="color: var(--text-secondary);">15 minutes ago</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; padding: 8px;">
-                    <span><i class="fas fa-sync-alt" style="color: var(--warning-color);"></i> CI/CD pipeline triggered</span>
-                    <span style="color: var(--text-secondary);">1 hour ago</span>
+                <div class="stat-value">124ms</div>
+                <div class="stat-trend">
+                    <span class="trend-down"><i class="fas fa-arrow-down"></i> 12ms</span>
+                    <span>improvement</span>
                 </div>
             </div>
         </div>
-    `;
-}
 
-// Builder HTML
-function getBuilderHTML() {
-    return `
-        <div class="builder-container">
-            <h3 style="margin-bottom: 20px;">Build Configuration</h3>
-            
-            <div class="builder-config">
-                <div class="config-group">
-                    <label>Repository URL</label>
-                    <input type="text" placeholder="https://github.com/user/repo.git" value="https://github.com/autopsych/core.git">
+        <div class="charts-section">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>Build Activity</h3>
+                    <div class="chart-actions">
+                        <button class="chart-action">Day</button>
+                        <button class="chart-action active">Week</button>
+                        <button class="chart-action">Month</button>
+                    </div>
                 </div>
-                
-                <div class="config-group">
-                    <label>Branch</label>
-                    <select>
-                        <option>main</option>
-                        <option>develop</option>
-                        <option>feature/new-ui</option>
-                    </select>
-                </div>
-                
-                <div class="config-group">
-                    <label>Build Command</label>
-                    <input type="text" value="npm run build">
-                </div>
-                
-                <div class="config-group">
-                    <label>Environment Variables</label>
-                    <textarea rows="4">NODE_ENV=production
-API_KEY=${'${API_KEY}'}
-DATABASE_URL=${'${DATABASE_URL}'}</textarea>
+                <div class="chart-container">
+                    <canvas id="buildChart"></canvas>
                 </div>
             </div>
             
-            <div style="display: flex; gap: 12px;">
-                <button class="primary-btn" onclick="startBuild()">
-                    <i class="fas fa-play"></i> Start Build
-                </button>
-                <button class="secondary-btn" onclick="saveConfig()">
-                    <i class="fas fa-save"></i> Save Configuration
-                </button>
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>Resource Usage</h3>
+                    <div class="chart-actions">
+                        <button class="chart-action">CPU</button>
+                        <button class="chart-action active">Memory</button>
+                        <button class="chart-action">Network</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="resourceChart"></canvas>
+                </div>
             </div>
         </div>
-    `;
-}
 
-// Launcher HTML
-function getLauncherHTML() {
-    return `
-        <div class="builder-container">
-            <h3 style="margin-bottom: 20px;">Application Launcher</h3>
-            
-            <div class="builder-config">
-                <div class="config-group">
-                    <label>Application</label>
-                    <select id="app-select" onchange="updateAppConfig()">
-                        <option>Web Frontend</option>
-                        <option>API Server</option>
-                        <option>Database</option>
-                        <option>Cache Service</option>
-                    </select>
-                </div>
-                
-                <div class="config-group">
-                    <label>Version</label>
-                    <select>
-                        <option>latest</option>
-                        <option>2.1.0</option>
-                        <option>2.0.5</option>
-                        <option>1.9.8</option>
-                    </select>
-                </div>
-                
-                <div class="config-group">
-                    <label>Port Mapping</label>
-                    <input type="text" value="3000:3000">
-                </div>
-                
-                <div class="config-group">
-                    <label>Resources</label>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                        <input type="text" placeholder="CPU cores" value="2">
-                        <input type="text" placeholder="Memory (MB)" value="1024">
-                    </div>
-                </div>
+        <div class="activity-list">
+            <div class="activity-header">
+                <h3>Recent Activity</h3>
+                <button class="chart-action">View All</button>
             </div>
             
-            <div style="display: flex; gap: 12px;">
-                <button class="primary-btn" onclick="launchApplication()">
-                    <i class="fas fa-play"></i> Launch Application
-                </button>
-                <button class="secondary-btn" onclick="stopApplication()">
-                    <i class="fas fa-stop"></i> Stop
-                </button>
-            </div>
-        </div>
-    `;
-}
-
-// Docker HTML
-function getDockerHTML() {
-    return `
-        <div class="builder-container">
-            <h3 style="margin-bottom: 20px;">Docker Management</h3>
-            
-            <div class="docker-stats">
-                <div class="stat-card" style="padding: 16px;">
-                    <h4>Images</h4>
-                    <div style="font-size: 28px; font-weight: 600;">24</div>
+            <div class="activity-item">
+                <div class="activity-icon success">
+                    <i class="fas fa-check"></i>
                 </div>
-                <div class="stat-card" style="padding: 16px;">
-                    <h4>Containers</h4>
-                    <div style="font-size: 28px; font-weight: 600;">8</div>
+                <div class="activity-content">
+                    <div class="activity-title">Build #2847 completed successfully</div>
+                    <div class="activity-meta">
+                        <span>main · frontend-app</span>
+                        <span class="activity-badge">2m 34s</span>
+                    </div>
                 </div>
-                <div class="stat-card" style="padding: 16px;">
-                    <h4>Volumes</h4>
-                    <div style="font-size: 28px; font-weight: 600;">12</div>
-                </div>
-                <div class="stat-card" style="padding: 16px;">
-                    <h4>Networks</h4>
-                    <div style="font-size: 28px; font-weight: 600;">5</div>
-                </div>
+                <span class="log-timestamp">2 min ago</span>
             </div>
             
-            <div class="container-list">
-                <h4 style="margin-bottom: 16px;">Running Containers</h4>
-                
-                <div class="container-item">
-                    <div>
-                        <i class="fas fa-cube" style="color: var(--primary-color); margin-right: 8px;"></i>
-                        web-frontend
-                    </div>
-                    <div>
-                        <span class="container-status running">running</span>
-                        <span style="margin-left: 12px; color: var(--text-secondary);">2 days</span>
+            <div class="activity-item">
+                <div class="activity-icon info">
+                    <i class="fas fa-rocket"></i>
+                </div>
+                <div class="activity-content">
+                    <div class="activity-title">Deployed to production</div>
+                    <div class="activity-meta">
+                        <span>v2.1.0 · api-server</span>
+                        <span class="activity-badge">3 replicas</span>
                     </div>
                 </div>
-                
-                <div class="container-item">
-                    <div>
-                        <i class="fas fa-cube" style="color: var(--primary-color); margin-right: 8px;"></i>
-                        api-server
-                    </div>
-                    <div>
-                        <span class="container-status running">running</span>
-                        <span style="margin-left: 12px; color: var(--text-secondary);">5 days</span>
-                    </div>
-                </div>
-                
-                <div class="container-item">
-                    <div>
-                        <i class="fas fa-cube" style="color: var(--primary-color); margin-right: 8px;"></i>
-                        postgres-db
-                    </div>
-                    <div>
-                        <span class="container-status running">running</span>
-                        <span style="margin-left: 12px; color: var(--text-secondary);">7 days</span>
-                    </div>
-                </div>
-                
-                <div class="container-item">
-                    <div>
-                        <i class="fas fa-cube" style="color: var(--text-secondary); margin-right: 8px;"></i>
-                        redis-cache
-                    </div>
-                    <div>
-                        <span class="container-status" style="background: #fee2e2; color: #991b1b;">stopped</span>
-                        <span style="margin-left: 12px; color: var(--text-secondary);">1 hour</span>
-                    </div>
-                </div>
+                <span class="log-timestamp">15 min ago</span>
             </div>
             
-            <div style="display: flex; gap: 12px; margin-top: 20px;">
-                <button class="primary-btn" onclick="refreshContainers()">
-                    <i class="fas fa-sync-alt"></i> Refresh
-                </button>
-                <button class="secondary-btn" onclick="pruneSystem()">
-                    <i class="fas fa-trash-alt"></i> Prune System
-                </button>
-            </div>
-        </div>
-    `;
-}
-
-// CI/CD HTML
-function getCIHTML() {
-    return `
-        <div class="builder-container">
-            <h3 style="margin-bottom: 20px;">CI/CD Pipeline</h3>
-            
-            <div style="margin-bottom: 24px;">
-                <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px;">
-                    <span class="container-status running" style="background: var(--primary-color); color: white;">Pipeline Active</span>
-                    <span>Last run: 5 minutes ago</span>
+            <div class="activity-item">
+                <div class="activity-icon warning">
+                    <i class="fas fa-exclamation"></i>
                 </div>
-                
-                <div style="background: #f8fafc; border-radius: 8px; padding: 16px;">
-                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-                        <i class="fas fa-check-circle" style="color: var(--secondary-color);"></i>
-                        <span>Checkout code</span>
-                        <span style="margin-left: auto; color: var(--text-secondary);">2s</span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-                        <i class="fas fa-check-circle" style="color: var(--secondary-color);"></i>
-                        <span>Install dependencies</span>
-                        <span style="margin-left: auto; color: var(--text-secondary);">45s</span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-                        <i class="fas fa-check-circle" style="color: var(--secondary-color);"></i>
-                        <span>Run tests</span>
-                        <span style="margin-left: auto; color: var(--text-secondary);">1m 20s</span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        <i class="fas fa-spinner fa-pulse" style="color: var(--primary-color);"></i>
-                        <span>Build Docker image</span>
-                        <span style="margin-left: auto; color: var(--text-secondary);">In progress...</span>
+                <div class="activity-content">
+                    <div class="activity-title">High memory usage detected</div>
+                    <div class="activity-meta">
+                        <span>container: redis-cache</span>
+                        <span class="activity-badge">92% used</span>
                     </div>
                 </div>
+                <span class="log-timestamp">1 hour ago</span>
             </div>
             
-            <div style="display: flex; gap: 12px;">
-                <button class="primary-btn" onclick="triggerPipeline()">
-                    <i class="fas fa-play"></i> Trigger Pipeline
-                </button>
-                <button class="secondary-btn" onclick="viewHistory()">
-                    <i class="fas fa-history"></i> View History
-                </button>
+            <div class="activity-item">
+                <div class="activity-icon success">
+                    <i class="fas fa-sync-alt"></i>
+                </div>
+                <div class="activity-content">
+                    <div class="activity-title">Auto-scaling triggered</div>
+                    <div class="activity-meta">
+                        <span>web-service · 2 → 4 pods</span>
+                        <span class="activity-badge">success</span>
+                    </div>
+                </div>
+                <span class="log-timestamp">2 hours ago</span>
             </div>
         </div>
     `;
@@ -349,12 +323,18 @@ function addLogEntry(message, type = 'info') {
     const logOutput = document.getElementById('log-output');
     if (!logOutput) return;
     
-    const timestamp = new Date().toLocaleTimeString();
-    const logEntry = document.createElement('div');
-    logEntry.className = `log-entry ${type}`;
-    logEntry.innerHTML = `<span class="timestamp">[${timestamp}]</span> ${message}`;
+    const now = new Date();
+    const timestamp = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
     
-    logOutput.appendChild(logEntry);
+    const logLine = document.createElement('div');
+    logLine.className = `log-line ${type}`;
+    logLine.innerHTML = `
+        <span class="log-timestamp">${timestamp}</span>
+        <span class="log-level">${type.toUpperCase()}</span>
+        <span class="log-message">${message}</span>
+    `;
+    
+    logOutput.appendChild(logLine);
     logOutput.scrollTop = logOutput.scrollHeight;
 }
 
@@ -370,92 +350,144 @@ function exportLogs() {
     const logOutput = document.getElementById('log-output');
     if (!logOutput) return;
     
-    const logs = logOutput.innerText;
+    const logs = Array.from(logOutput.children)
+        .map(line => line.textContent)
+        .join('\n');
+    
     const blob = new Blob([logs], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `autopsych-logs-${new Date().toISOString()}.txt`;
+    a.download = `autopsych-logs-${new Date().toISOString()}.log`;
     a.click();
     
-    addLogEntry('Logs exported successfully', 'success');
+    addLogEntry(`Exported ${logOutput.children.length} log entries`, 'success');
 }
 
-// Action functions
-function startBuild() {
-    addLogEntry('Build started...', 'info');
-    setTimeout(() => {
-        addLogEntry('Build completed successfully!', 'success');
-    }, 2000);
+// Search functionality
+function performSearch(query) {
+    if (!query.trim()) return;
+    addLogEntry(`Searching for: "${query}"`, 'info');
+    // Implement search logic here
 }
 
-function launchApplication() {
-    const app = document.getElementById('app-select')?.value || 'Application';
-    addLogEntry(`Launching ${app}...`, 'info');
-    setTimeout(() => {
-        addLogEntry(`${app} started successfully on port 3000`, 'success');
-    }, 1500);
+// Modal management
+function toggleQuickActions() {
+    document.getElementById('quickActionsModal').classList.toggle('show');
 }
 
-function stopApplication() {
-    addLogEntry('Stopping application...', 'warning');
-    setTimeout(() => {
-        addLogEntry('Application stopped', 'info');
-    }, 1000);
+function closeModal() {
+    document.getElementById('quickActionsModal').classList.remove('show');
 }
 
-function refreshContainers() {
-    addLogEntry('Refreshing container list...', 'info');
-    setTimeout(() => {
-        addLogEntry('Container list updated', 'success');
-    }, 800);
+// Theme management
+function toggleTheme() {
+    document.body.classList.toggle('dark-theme');
+    const icon = document.querySelector('.action-btn .fa-moon');
+    icon.classList.toggle('fa-moon');
+    icon.classList.toggle('fa-sun');
+    addLogEntry('Theme toggled', 'info');
 }
 
-function pruneSystem() {
-    addLogEntry('Starting system prune...', 'warning');
-    setTimeout(() => {
-        addLogEntry('System prune completed. 2.5GB freed', 'success');
-    }, 3000);
-}
-
-function triggerPipeline() {
-    addLogEntry('CI/CD pipeline triggered', 'info');
-    setTimeout(() => {
-        addLogEntry('Pipeline execution started', 'info');
-    }, 500);
-}
-
-function saveConfig() {
-    addLogEntry('Configuration saved', 'success');
-}
-
-function refreshData() {
-    addLogEntry('Refreshing data...', 'info');
-    setTimeout(() => {
-        addLogEntry('Data refreshed successfully', 'success');
-    }, 1000);
-}
-
+// Notifications
 function toggleNotifications() {
-    addLogEntry('Notifications panel toggled', 'info');
+    addLogEntry('Opening notifications panel', 'info');
+    // Implement notifications panel
 }
 
-function updateAppConfig() {
-    const app = document.getElementById('app-select')?.value;
-    addLogEntry(`Loading configuration for ${app}...`, 'info');
+// Metrics collection simulation
+function startMetricsCollection() {
+    setInterval(() => {
+        updateSystemMetrics();
+    }, 5000);
 }
 
-function viewHistory() {
-    addLogEntry('Loading pipeline history...', 'info');
-}
-
-// Initialize on load
-document.addEventListener('DOMContentLoaded', function() {
-    // Set initial section
-    setSection('dashboard');
+function updateSystemMetrics() {
+    const cpuMetric = document.querySelector('.metric:nth-child(1) .metric-value');
+    const memMetric = document.querySelector('.metric:nth-child(2) .metric-value');
     
-    // Add initial log entries
-    addLogEntry('Auto-Psych Dashboard initialized', 'success');
-    addLogEntry('System ready', 'info');
-    addLogEntry('Connected to Docker daemon', 'success');
-});
+    if (cpuMetric && memMetric) {
+        const cpu = (20 + Math.random() * 15).toFixed(1);
+        const mem = (3.5 + Math.random() * 2).toFixed(1);
+        
+        cpuMetric.textContent = `${cpu}%`;
+        memMetric.textContent = `${mem}GB`;
+    }
+}
+
+// Container monitoring
+function startContainerMonitoring() {
+    // Simulate container status updates
+    setInterval(() => {
+        addLogEntry('Container health check completed', 'info');
+    }, 30000);
+}
+
+// Initialize charts (requires Chart.js library)
+function initializeDashboardCharts() {
+    if (typeof Chart === 'undefined') {
+        // Load Chart.js dynamically if not present
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+        script.onload = createCharts;
+        document.head.appendChild(script);
+    } else {
+        createCharts();
+    }
+}
+
+function createCharts() {
+    // Build activity chart
+    const buildCtx = document.getElementById('buildChart')?.getContext('2d');
+    if (buildCtx) {
+        new Chart(buildCtx, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Builds',
+                    data: [65, 72, 68, 85, 94, 78, 82],
+                    borderColor: '#6366f1',
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    }
+    
+    // Resource usage chart
+    const resourceCtx = document.getElementById('resourceChart')?.getContext('2d');
+    if (resourceCtx) {
+        new Chart(resourceCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Used', 'Available'],
+                datasets: [{
+                    data: [4.2, 11.8],
+                    backgroundColor: ['#6366f1', '#e2e8f0'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    }
+}
